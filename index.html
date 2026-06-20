@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GammaX — X-Ray Exposure Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  /* Deep, sleek dashboard palette */
+  --bg:       #111218;
+  --surface:  #28284b;
+  --surface2: #483d72;
+  --border:   #47599a;
+  --border2:  #4b5e9f;
+  
+  /* Vibrant Accents */
+  --accent:   #ffffff; /* Cyan */
+  --accent-g: linear-gradient(135deg, #c974f0, #87b9f3);
+  --green:    #10b981;
+  --red:      #ef4444;
+  --orange:   #f59e0b;
+  --purple:   #8b5cf6;
+  
+  /* Typography */
+  --text:     #f1f5f9;
+  --muted:    #94a3b8;
+  --mono:     'DM Mono', monospace;
+  --sans:     'DM Sans', sans-serif;
+  --r:        16px;
+  --shadow:   0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 229, 255, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  padding: 0 24px 80px;
+}
+
+/* ── Top bar ─────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.logo { display: flex; align-items: center; gap: 16px; }
+.logo-mark {
+  width: 44px; height: 44px;
+  background: var(--accent-g);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
+}
+.logo-text { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
+.logo-sub  { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+.status-pill {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  padding: 8px 16px; border-radius: 30px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.1); 
+  border: 1px solid rgba(16, 185, 129, 0.3); 
+  color: var(--green);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+/* ── Main Layout ─────────────────────────── */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.main-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 960px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Cards ───────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+.card-title {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.card-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Sidebar (Left Column) ───────────────── */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  background: rgba(255,255,255,0.01);
+}
+.upload-zone:hover, .upload-zone.over {
+  border-color: var(--accent);
+  background: rgba(0, 229, 255, 0.04);
+  transform: translateY(-2px);
+}
+.upload-zone input {
+  position: absolute; inset: 0; opacity: 0;
+  cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 42px; margin-bottom: 16px; display: block; }
+.upload-zone h3 { font-size: 16px; color: var(--text); font-weight: 500; margin-bottom: 6px; }
+.upload-zone p  { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+.preview-wrap { display: none; margin-top: 24px; }
+.preview-wrap.show { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.preview-img {
+  width: 100%; border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block; max-height: 320px;
+  object-fit: contain; background: #000;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+}
+.preview-fname {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--accent); margin: 16px 0;
+  text-align: center; word-break: break-all;
+}
+
+/* ── Buttons ─────────────────────────────── */
+.btn-analyze {
+  width: 100%; padding: 16px;
+  background: var(--accent-g);
+  border: none; border-radius: 12px;
+  font-family: var(--sans); font-size: 14px;
+  font-weight: 700; letter-spacing: 1px;
+  color: #000; cursor: pointer; 
+  transition: all 0.2s ease;
+  display: flex; align-items: center;
+  justify-content: center; gap: 10px;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.25);
+}
+.btn-analyze:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+  transform: translateY(-2px);
+}
+.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
+.btn-reset {
+  width: 100%; padding: 14px; margin-top: 12px;
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: 12px; font-family: var(--mono);
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted);
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-reset:hover { border-color: var(--text); color: var(--text); background: rgba(255,255,255,0.05); }
+
+/* ── Pipeline Sidebar Widget ─────────────── */
+.pipeline-vertical {
+  margin-top: 24px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.pipe-step-v {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 0; position: relative;
+}
+.pipe-step-v:not(:last-child)::after {
+  content: ''; position: absolute;
+  left: 15px; top: 40px; bottom: -10px;
+  width: 2px; background: var(--border2);
+  z-index: 0;
+}
+.pipe-num-v {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  z-index: 1; transition: all 0.3s;
+}
+.pipe-label-v {
+  font-family: var(--sans); font-size: 13px; color: var(--muted);
+  font-weight: 500; transition: all 0.3s;
+}
+.pipe-step-v.active .pipe-num-v {
+  background: rgba(0, 229, 255, 0.1); border-color: var(--accent); color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+.pipe-step-v.active .pipe-label-v { color: var(--text); }
+
+/* ── Spinner & Error ─────────────────────── */
+.spinner-row {
+  display: none; align-items: center; justify-content: center; gap: 12px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--accent); margin-top: 16px;
+}
+.spinner-row.show { display: flex; }
+.spin {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(0, 229, 255, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: rot .75s linear infinite;
+}
+@keyframes rot { to { transform: rotate(360deg); } }
+
+.err-box {
+  display: none; margin-top: 16px;
+  padding: 16px; border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-family: var(--mono); font-size: 12px;
+  color: var(--red); line-height: 1.6;
+}
+.err-box.show { display: block; animation: fadeIn 0.3s; }
+
+/* ── Results Area (Right Column) ─────────── */
+.results { display: none; }
+.results.show { display: flex; flex-direction: column; gap: 24px; animation: fadeIn 0.5s ease; }
+
+.result-header {
+  display: flex; align-items: center; gap: 24px; margin-bottom: 28px;
+}
+.result-emoji { 
+  font-size: 56px; line-height: 1; 
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+}
+.result-chip {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+.result-name {
+  font-size: 36px; font-weight: 700; line-height: 1;
+  margin-bottom: 8px; letter-spacing: -0.5px;
+}
+.result-conf { 
+  font-family: var(--mono); font-size: 13px; color: var(--muted); 
+  display: inline-block; padding: 4px 12px; background: var(--surface2);
+  border-radius: 20px; border: 1px solid var(--border);
+}
+
+/* Probabilities */
+.prob-section { margin-bottom: 24px; padding: 24px; background: var(--surface2); border-radius: 12px; border: 1px solid var(--border); }
+.prob-row { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.prob-row:last-child { margin-bottom: 0; }
+.prob-lbl { font-family: var(--sans); font-size: 13px; font-weight: 500; width: 140px; color: var(--text); flex-shrink: 0; }
+.prob-track { flex: 1; height: 6px; background: var(--bg); border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+.prob-fill  { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.4,0,.2,1); position: relative; }
+.prob-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 20px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5)); }
+.prob-pct   { font-family: var(--mono); font-size: 12px; width: 44px; text-align: right; font-weight: 500; }
+
+/* Dashboard Tiles Grid */
+.tiles {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;
+}
+.tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.tile::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+  background: var(--border2); transition: background 0.3s;
+}
+.tile:hover::before { background: var(--accent); }
+.tile-label {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+}
+.tile-value { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; letter-spacing: -1px; }
+.tile-sub   { font-size: 13px; color: var(--muted); font-family: var(--mono); }
+
+/* Physics Grid */
+.phys-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;
+}
+.phys-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  transition: transform 0.2s;
+}
+.phys-item:hover { transform: translateY(-2px); border-color: var(--border2); }
+.phys-key { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 4px; }
+.phys-val { font-family: var(--sans); font-size: 16px; color: var(--accent); font-weight: 600; }
+
+/* Recommendation */
+.rec-box {
+  padding: 16px 20px; border-radius: 12px;
+  border-left: 4px solid; font-size: 15px; font-weight: 500;
+  line-height: 1.6; background: var(--surface2); margin-top: 16px;
+}
+
+/* Grad-CAM section */
+.gradcam-wrap { display: none; }
+.gradcam-wrap.show { display: block; }
+.gradcam-container {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin-top: 16px;
+}
+.gradcam-img-wrap {
+  position: relative; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border); background: #000;
+}
+.gradcam-img { width: 100%; display: block; transition: transform 0.3s; }
+.gradcam-img-wrap:hover .gradcam-img { transform: scale(1.02); }
+.gradcam-lbl {
+  position: absolute; top: 12px; left: 12px;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  padding: 6px 12px; border-radius: 6px;
+  font-family: var(--mono); font-size: 10px; color: #fff; letter-spacing: 2px;
+}
+.gradcam-legend {
+  display: flex; gap: 24px; margin-top: 20px; padding: 16px;
+  background: var(--surface2); border-radius: 8px; border: 1px solid var(--border);
+  justify-content: center; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 10px; }
+.legend-dot  { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.legend-txt  { font-size: 12px; color: var(--text); font-family: var(--sans); font-weight: 500; }
+
+/* Dynamic Colors */
+.c-under  { color: var(--red);    }
+.c-proper { color: var(--green);  }
+.c-over   { color: var(--orange); }
+.f-under  { background: var(--red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+.f-proper { background: var(--green); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+.f-over   { background: var(--orange); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+.b-under  { border-color: var(--red);    }
+.b-proper { border-color: var(--green);  }
+.b-over   { border-color: var(--orange); }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-mark">⚡</div>
+      <div>
+        <div class="logo-text">GammaX</div>
+        <div class="logo-sub">X-Ray Exposure Intelligence</div>
+      </div>
+    </div>
+    <div class="status-pill" id="statusPill">System Ready</div>
+  </div>
+
+  <div class="main-grid">
+
+    <aside>
+      <div class="card">
+        <div class="card-title">Input Source</div>
+
+        <div class="upload-zone" id="zone">
+         
+          <input type="file" id="fileInput" accept=".jpg,.jpeg,.png">
+          <h3>Drop X-Ray image here</h3>
+          <p>Click to browse files</p>
+        </div>
+
+        <div class="preview-wrap" id="previewWrap">
+          <img class="preview-img" id="previewImg" src="" alt="preview">
+          <div class="preview-fname" id="previewFname"></div>
+          <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+            Run Full Analysis
+          </button>
+          <button class="btn-reset" onclick="resetAll()">↺ Upload Another</button>
+          
+          <div class="spinner-row" id="spinner">
+            <div class="spin"></div>
+            <span>Processing through 5 stages...</span>
+          </div>
+          <div class="err-box" id="errBox"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 32px;">
+        <div class="card-title">Analysis Pipeline</div>
+        <div class="pipeline-vertical" id="pipelineRow">
+          <div class="pipe-step-v" id="p1">
+            <div class="pipe-num-v">01</div>
+            <div class="pipe-label-v">CNN Classification</div>
+          </div>
+          <div class="pipe-step-v" id="p2">
+            <div class="pipe-num-v">02</div>
+            <div class="pipe-label-v">Physics Features</div>
+          </div>
+          <div class="pipe-step-v" id="p3">
+            <div class="pipe-num-v">03</div>
+            <div class="pipe-label-v">Retake Decision</div>
+          </div>
+          <div class="pipe-step-v" id="p4">
+            <div class="pipe-num-v">04</div>
+            <div class="pipe-label-v">Correction Calc</div>
+          </div>
+          <div class="pipe-step-v" id="p5">
+            <div class="pipe-num-v">05</div>
+            <div class="pipe-label-v">Grad-CAM Overlay</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="results" id="results">
+
+        <div class="card">
+          <div class="card-title">01 — AI Assessment</div>
+          <div class="result-header">
+            <div class="result-emoji" id="rEmoji"></div>
+            <div>
+              <div class="result-chip">Detected Exposure</div>
+              <div class="result-name" id="rName"></div>
+              <div class="result-conf" id="rConf"></div>
+            </div>
+          </div>
+
+          <div class="prob-section" id="probBars"></div>
+          <div class="rec-box" id="recBox"></div>
+        </div>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="card-title" style="margin-bottom:16px;">03 — Protocol</div>
+            <div class="tile-value" id="retakeVal"></div>
+            <div class="tile-sub"  id="retakeSub"></div>
+          </div>
+          <div class="tile">
+            <div class="card-title" style="margin-bottom:16px;">04 — Adjustment</div>
+            <div class="tile-value" id="corrVal"></div>
+            <div class="tile-sub"  id="corrSub"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">02 — Physics Telemetry</div>
+          <div class="phys-grid" id="physGrid"></div>
+        </div>
+
+        <div class="card gradcam-wrap" id="gradcamCard">
+          <div class="card-title">05 — Interpretability (Grad-CAM)</div>
+          <p style="font-size:14px;color:var(--muted);margin-bottom:20px; line-height: 1.5;">
+            Highlighting structural regions that influenced the model's exposure classification.
+          </p>
+          
+          <div class="gradcam-container">
+            <div class="gradcam-img-wrap">
+              <div class="gradcam-lbl">SOURCE X-RAY</div>
+              <img class="gradcam-img" id="origImg" src="" alt="original">
+            </div>
+            <div class="gradcam-img-wrap">
+              <div class="gradcam-lbl">ATTENTION HEATMAP</div>
+              <img class="gradcam-img" id="gradcamImg" src="" alt="gradcam">
+            </div>
+          </div>
+          
+          <div class="gradcam-legend">
+            <div class="legend-item"><div class="legend-dot" style="color:#ef4444; background:#ef4444;"></div><div class="legend-txt">High Influence</div></div>
+            <div class="legend-item"><div class="legend-dot" style="color:#f59e0b; background:#f59e0b;"></div><div class="legend-txt">Moderate Influence</div></div>
+            <div class="legend-item"><div class="legend-dot" style="color:#3b82f6; background:#3b82f6;"></div><div class="legend-txt">Low Influence</div></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const zone      = document.getElementById('zone');
+  let selectedFile = null;
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  });
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('over');
+    if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+
+  function loadFile(f) {
+    selectedFile = f;
+    document.getElementById('previewFname').textContent = f.name;
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('zone').style.display = 'none';
+      show('previewWrap');
+      hide('errBox');
+      hide('results');
+      
+      // Reset pipeline indicators
+      ['p1','p2','p3','p4','p5'].forEach(id =>
+        document.getElementById(id).classList.remove('active'));
+    };
+    reader.readAsDataURL(f);
+  }
+
+  async function analyze() {
+    if (!selectedFile) return;
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    show('spinner');
+    hide('errBox');
+    hide('results');
+
+    // Sequential animation for pipeline
+    ['p1','p2','p3','p4','p5'].forEach((id,i) => {
+      setTimeout(() => {
+        document.getElementById(id).classList.add('active');
+      }, i * 400);
+    });
+
+    try {
+      const fd = new FormData();
+      fd.append('file', selectedFile);
+      const res  = await fetch('/predict', { method:'POST', body: fd });
+      const data = await res.json();
+
+      if (data.error) { showErr(data.error); return; }
+
+      // Wait a moment for UI animations to finish before showing results
+      setTimeout(() => renderResults(data), 2000);
+      
+    } catch(e) {
+      showErr('Cannot connect to local Flask server.\nMake sure app.py is running on localhost:5000');
+      btn.disabled = false;
+      hide('spinner');
+    }
+  }
+
+  function renderResults(d) {
+    document.getElementById('analyzeBtn').disabled = false;
+    hide('spinner');
+    
+    const cc = d.cnn_class.includes('under') ? 'under'
+             : d.cnn_class.includes('over')  ? 'over' : 'proper';
+
+    // Stage 1
+    document.getElementById('rEmoji').textContent  = d.icon;
+    document.getElementById('rName').textContent   = d.class_label;
+    document.getElementById('rName').className     = `result-name c-${cc}`;
+    document.getElementById('rConf').textContent   = `Confidence: ${d.confidence}%`;
+
+    // Bars
+    const colorMap = { 'Underexposed':'under', 'Properly Exposed':'proper', 'Overexposed':'over' };
+    const barsEl = document.getElementById('probBars');
+    barsEl.innerHTML = '';
+    for (const [label, pct] of Object.entries(d.all_scores)) {
+      const c = colorMap[label] || 'proper';
+      barsEl.innerHTML += `
+        <div class="prob-row">
+          <div class="prob-lbl">${label}</div>
+          <div class="prob-track"><div class="prob-fill f-${c}" style="width:0%" data-target="${pct}"></div></div>
+          <div class="prob-pct c-${c}">${pct}%</div>
+        </div>`;
+    }
+
+    // Recommendations
+    const rec = document.getElementById('recBox');
+    rec.textContent = d.recommendation;
+    rec.className   = `rec-box b-${cc} c-${cc}`;
+    rec.style.background = `rgba(var(--${cc}-rgb, 0,0,0), 0.05)`; 
+
+    // Stage 3
+    const rtk = d.retake;
+    document.getElementById('retakeVal').textContent = rtk ? 'Required' : 'Pass';
+    document.getElementById('retakeVal').style.color  = rtk ? 'var(--orange)' : 'var(--green)';
+    document.getElementById('retakeSub').innerHTML  = rtk ? `<span style="color:var(--orange)">⚠️ ${d.retake_prob}% Retake Probability</span>` : `✅ Meets clinical standards`;
+
+    // Stage 4
+    const corr = d.correction_pct;
+    const sign  = corr > 0 ? '+' : '';
+    document.getElementById('corrVal').textContent = `${sign}${corr}%`;
+    document.getElementById('corrVal').style.color  = 
+      corr > 0 ? 'var(--red)' : corr < 0 ? 'var(--orange)' : 'var(--green)';
+    document.getElementById('corrSub').textContent  = 
+      corr === 0 ? 'Optimal Exposure' : `${d.correction_dir} factor`;
+
+    // Stage 2
+    const physEl = document.getElementById('physGrid');
+    physEl.innerHTML = '';
+    for (const [k, v] of Object.entries(d.physics)) {
+      const cleanKey = k.replace(/_/g, ' ').toUpperCase();
+      physEl.innerHTML += `
+        <div class="phys-item">
+          <div class="phys-key">${cleanKey}</div>
+          <div class="phys-val">${v}</div>
+        </div>`;
+    }
+
+    // Stage 5
+    if (d.gradcam_b64) {
+      document.getElementById('origImg').src    = `data:image/jpeg;base64,${d.image_b64}`;
+      document.getElementById('gradcamImg').src = `data:image/png;base64,${d.gradcam_b64}`;
+      document.getElementById('gradcamCard').classList.add('show');
+    }
+
+    show('results');
+    
+    // Animate bars after rendering
+    setTimeout(() => {
+      document.querySelectorAll('.prob-fill').forEach(bar => {
+        bar.style.width = bar.getAttribute('data-target') + '%';
+      });
+    }, 100);
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById('errBox');
+    el.textContent = msg; el.classList.add('show');
+  }
+
+  function resetAll() {
+    selectedFile = null;
+    fileInput.value = '';
+    hide('previewWrap');
+    hide('results');
+    hide('errBox');
+    document.getElementById('zone').style.display = 'block';
+    document.getElementById('gradcamCard').classList.remove('show');
+    ['p1','p2','p3','p4','p5'].forEach(id =>
+      document.getElementById(id).classList.remove('active'));
+  }
+
+  function show(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('show'); el.style.display = ''; }
+  }
+  function hide(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  }
+</script>
+</body>
+</html>
