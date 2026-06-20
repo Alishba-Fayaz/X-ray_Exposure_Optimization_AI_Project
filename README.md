@@ -26,6 +26,12 @@ This logic is used throughout the entire project.
 
 ---
 
+## Setup Note
+This repo does not include the dataset or trained models.
+After cloning:
+1. Add X-ray images to `data/raw/`
+2. Run the scripts in order to regenerate everything.
+
 ## How to Run
 
 ```bash
