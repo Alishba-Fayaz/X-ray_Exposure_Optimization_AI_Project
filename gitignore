@@ -1,0 +1,24 @@
+# Raw and processed data (regenerate with prepare_data.py)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Trained model weights (regenerate with training scripts)
+models/*.keras
+models/*.pkl
+models/*.json
+
+# Keep result charts (small, useful as proof of results)
+!models/*.png
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db
